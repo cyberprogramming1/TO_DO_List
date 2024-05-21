@@ -1,13 +1,13 @@
-# main.py
-
 from task_manager import TaskManager
+from tabulate import tabulate
+from deleted_tasks import DeletedTasks
 
 def main():
     server = 'DESKTOP-VIKK52P'
     database = 'TO_DO_List'
-    
 
     task_manager = TaskManager(server, database)
+    deleted_tasks = DeletedTasks()
 
     while True:
         print("\nTo-Do List Application")
@@ -19,8 +19,9 @@ def main():
         print("6. Mark Task as Completed")
         print("7. Edit Task Name")
         print("8. Delete Task")
-        print("9. Exit")
-        
+        print("9. Get Deleted Tasks")
+        print("10. Exit")
+
         choice = input("Enter your choice: ")
 
         if choice == '1':
@@ -29,17 +30,14 @@ def main():
             print("Task added.")
         elif choice == '2':
             tasks = task_manager.list_tasks()
-            for task in tasks:
-                print(task)
+            print(tabulate([[task.task_id, task.task_name, task.status] for task in tasks], headers=["Task ID", "Task Name", "Status"], tablefmt="grid"))
         elif choice == '3':
             tasks = task_manager.list_pending_tasks()
-            for task in tasks:
-                print(task)
+            print(tabulate([[task.task_id, task.task_name, task.status] for task in tasks], headers=["Task ID", "Task Name", "Status"], tablefmt="grid"))
         elif choice == '4':
             search_term = input("Enter search term: ")
             tasks = task_manager.search_task(search_term)
-            for task in tasks:
-                print(task)
+            print(tabulate([[task.task_id, task.task_name, task.status] for task in tasks], headers=["Task ID", "Task Name", "Status"], tablefmt="grid"))
         elif choice == '5':
             task_id = int(input("Enter task ID to update: "))
             new_status = input("Enter new status (Pending/Completed): ")
@@ -56,9 +54,20 @@ def main():
             print("Task name updated.")
         elif choice == '8':
             task_id = int(input("Enter task ID to delete: "))
-            task_manager.delete_task(task_id)
-            print("Task deleted.")
+            deleted_task = task_manager.delete_task(task_id)
+            if deleted_task:
+                deleted_tasks.add_deleted_task(deleted_task)
+                print("Task deleted.")
+            else:
+                print("Task not found.")
         elif choice == '9':
+            deleted = deleted_tasks.get_deleted_tasks()
+            if deleted:
+                print("Deleted Tasks:")
+                print(tabulate([[deleted_task[0], deleted_task[1], deleted_task[2]] for deleted_task in deleted], headers=["Task ID", "Task Name", "Status"], tablefmt="grid"))
+            else:
+                print("No deleted tasks.")
+        elif choice == '10':
             task_manager.close()
             print("Exiting application.")
             break
